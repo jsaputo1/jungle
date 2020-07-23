@@ -11,15 +11,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160625062916) do
+ActiveRecord::Schema.define(version: 20200723185549) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "buyers", force: :cascade do |t|
+    t.string "username", limit: 255, null: false
+    t.string "email",    limit: 255, null: false
+    t.string "password", limit: 255, null: false
+  end
 
   create_table "categories", force: :cascade do |t|
     t.string   "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "favorites", force: :cascade do |t|
+    t.integer "buyer_id"
+    t.integer "listing_id"
   end
 
   create_table "line_items", force: :cascade do |t|
@@ -34,6 +45,16 @@ ActiveRecord::Schema.define(version: 20160625062916) do
 
   add_index "line_items", ["order_id"], name: "index_line_items_on_order_id", using: :btree
   add_index "line_items", ["product_id"], name: "index_line_items_on_product_id", using: :btree
+
+  create_table "listings", force: :cascade do |t|
+    t.string   "title",               limit: 255,                null: false
+    t.text     "description"
+    t.string   "thumbnail_photo_url", limit: 255,                null: false
+    t.string   "cover_photo_url",     limit: 255,                null: false
+    t.datetime "date"
+    t.integer  "price",                           default: 0,    null: false
+    t.boolean  "for_sale",                        default: true, null: false
+  end
 
   create_table "orders", force: :cascade do |t|
     t.integer  "total_cents"
@@ -56,7 +77,24 @@ ActiveRecord::Schema.define(version: 20160625062916) do
 
   add_index "products", ["category_id"], name: "index_products_on_category_id", using: :btree
 
+  create_table "sellers", force: :cascade do |t|
+    t.integer "buyer_id"
+    t.integer "listing_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string   "name"
+    t.string   "email"
+    t.string   "password_digest"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+  end
+
+  add_foreign_key "favorites", "buyers", name: "favorites_buyer_id_fkey", on_delete: :cascade
+  add_foreign_key "favorites", "listings", name: "favorites_listing_id_fkey", on_delete: :cascade
   add_foreign_key "line_items", "orders"
   add_foreign_key "line_items", "products"
   add_foreign_key "products", "categories"
+  add_foreign_key "sellers", "buyers", name: "sellers_buyer_id_fkey", on_delete: :cascade
+  add_foreign_key "sellers", "listings", name: "sellers_listing_id_fkey", on_delete: :cascade
 end
